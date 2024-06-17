@@ -1,12 +1,12 @@
-pub fn addition(a: i32, b: i32) -> i32 {
+pub fn addition(a: i64, b: i64) -> i64 {
     a + b
 }
 
-pub fn sub(a: i32, b: i32) -> i32 {
+pub fn sub(a: i64, b: i64) -> i64 {
     a - b
 }
 
-pub fn multiply(multiplicand: i32, multiplier: i32) -> i32 {
+pub fn multiply(multiplicand: i64, multiplier: i64) -> i64 {
     let mut result = 0;
 
     for _ in 0..multiplier.abs() {
@@ -20,7 +20,7 @@ pub fn multiply(multiplicand: i32, multiplier: i32) -> i32 {
     result
 }
 
-pub fn divide(dividend: i32, divisor: i32) -> Result<(i32, i32), String> {
+pub fn divide(dividend: i64, divisor: i64) -> Result<(i64, i64), String> {
     if divisor == 0 {
         return Err("Cannot divide by zero".into());
     }
@@ -36,7 +36,7 @@ pub fn divide(dividend: i32, divisor: i32) -> Result<(i32, i32), String> {
     Ok((quotient, remainder))
 }
 
-pub fn exponent(base: i32, exponent: i32) -> i32 {
+pub fn exponent(base: i64, exponent: i64) -> i64 {
     if base == 0 && exponent == 0 {
         return 1;
     }

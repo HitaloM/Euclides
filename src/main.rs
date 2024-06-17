@@ -17,12 +17,12 @@ fn main() {
         .read_line(&mut expression)
         .expect("There's something very wrong with your expression.");
 
-    let mut stack: Stack<i32> = Stack {
+    let mut stack: Stack<i64> = Stack {
         elements: Vec::new(),
     };
 
     for token in expression.split_whitespace().rev() {
-        match token.parse::<i32>() {
+        match token.parse::<i64>() {
             Ok(num) => stack.elements.push(num),
             Err(_) => handle_operator(token, &mut stack),
         }
@@ -33,7 +33,7 @@ fn main() {
     }
 }
 
-fn handle_operator(operator: &str, stack: &mut Stack<i32>) {
+fn handle_operator(operator: &str, stack: &mut Stack<i64>) {
     if stack.elements.len() < 2 {
         println!("Error: there are not enough operands on the stack for the operation.");
         return;
