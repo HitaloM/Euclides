@@ -1,19 +1,64 @@
-use math::divide;
+use std::io::{self, Write};
 
 pub mod math;
 
+struct Stack<T> {
+    elements: Vec<T>,
+}
+
 fn main() {
-    println!("Hello, world!");
+    println!("Please enter an expression in Polish Notation, and I will evaluate it for you.");
+    print!("Expression: ");
+    io::stdout().flush().expect("Failed to flush stdout :/");
 
-    let a = 6;
-    let b = 2;
+    let mut expression = String::new();
 
-    let result = divide(a, b);
-    match result {
-        Ok(value) => {
-            println!("Result: {}", value.0);
-            println!("Remainder: {}", value.1);
+    io::stdin()
+        .read_line(&mut expression)
+        .expect("There's something very wrong with your expression.");
+
+    let mut stack: Stack<i32> = Stack {
+        elements: Vec::new(),
+    };
+
+    for token in expression.split_whitespace().rev() {
+        match token.parse::<i32>() {
+            Ok(num) => stack.elements.push(num),
+            Err(_) => handle_operator(token, &mut stack),
         }
-        Err(e) => println!("Error: {}", e),
+    }
+
+    for element in stack.elements {
+        println!("Result: {element}");
+    }
+}
+
+fn handle_operator(operator: &str, stack: &mut Stack<i32>) {
+    if stack.elements.len() < 2 {
+        println!("Error: there are not enough operands on the stack for the operation.");
+        return;
+    }
+
+    let n2 = stack.elements.pop().unwrap();
+    let n1 = stack.elements.pop().unwrap();
+
+    let result = match operator {
+        "+" => Some(math::addition(n1, n2)),
+        "*" => Some(math::multiply(n1, n2)),
+        "/" => match math::divide(n1, n2) {
+            Ok(result) => Some(result.0),
+            Err(_) => {
+                println!("Cannot divide by zero");
+                None
+            }
+        },
+        _ => {
+            println!("Unknown operator: {operator}");
+            return;
+        }
+    };
+
+    if let Some(value) = result {
+        stack.elements.push(value);
     }
 }
