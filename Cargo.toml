@@ -1,0 +1,8 @@
+[package]
+name = "Euclides"
+description = "This is a simple calculator that only uses addition and subtraction for each operation."
+authors = ["Hitalo M."]
+version = "0.1.0"
+license = "BSD-3-Clause"
+repository = "https://github.com/HitaloM/Euclides"
+edition = "2021"
