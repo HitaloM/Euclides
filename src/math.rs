@@ -51,6 +51,14 @@ pub fn exponent(base: i64, exponent: i64) -> i64 {
         return 0;
     }
 
+    let mut is_exponent_odd = false;
+    let mut count = 0;
+
+    while count < exponent.abs() {
+        count += 1;
+        is_exponent_odd = !is_exponent_odd;
+    }
+
     let mut result = 1;
 
     for _ in 0..exponent {
@@ -63,7 +71,7 @@ pub fn exponent(base: i64, exponent: i64) -> i64 {
         result = temp_result;
     }
 
-    if base < 0 && exponent % 2 != 0 {
+    if base < 0 && is_exponent_odd {
         return -result;
     }
 
