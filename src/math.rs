@@ -13,7 +13,7 @@ pub fn multiply(multiplicand: i64, multiplier: i64) -> i64 {
         result += multiplicand;
     }
 
-    if multiplier < 0 {
+    if (multiplicand < 0 && multiplier > 0) || (multiplicand > 0 && multiplier < 0) {
         result = -result;
     }
 
@@ -26,11 +26,15 @@ pub fn divide(dividend: i64, divisor: i64) -> Result<(i64, i64), String> {
     }
 
     let mut quotient = 0;
-    let mut remainder = dividend;
+    let mut remainder = dividend.abs();
 
-    while remainder >= divisor {
-        remainder -= divisor;
+    while remainder >= divisor.abs() {
+        remainder -= divisor.abs();
         quotient += 1;
+    }
+
+    if (dividend < 0 && divisor > 0) || (dividend > 0 && divisor < 0) {
+        quotient = -quotient;
     }
 
     Ok((quotient, remainder))
