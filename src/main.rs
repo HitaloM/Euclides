@@ -7,7 +7,9 @@ struct Stack<T> {
 }
 
 fn main() {
-    println!("Please enter an expression in Polish Notation, and I will evaluate it for you.");
+    println!(
+        "Please enter an expression in Reverse Polish Notation, and I will evaluate it for you."
+    );
     print!("Expression: ");
     io::stdout().flush().expect("Failed to flush stdout :/");
 
@@ -21,7 +23,7 @@ fn main() {
         elements: Vec::new(),
     };
 
-    for token in expression.split_whitespace().rev() {
+    for token in expression.split_whitespace() {
         match token.parse::<i64>() {
             Ok(num) => stack.elements.push(num),
             Err(_) => handle_operator(token, &mut stack),
@@ -44,6 +46,7 @@ fn handle_operator(operator: &str, stack: &mut Stack<i64>) {
 
     let result = match operator {
         "+" => Some(math::addition(n1, n2)),
+        "-" => Some(math::sub(n1, n2)),
         "*" => Some(math::multiply(n1, n2)),
         "/" => match math::divide(n1, n2) {
             Ok(result) => Some(result.0),
