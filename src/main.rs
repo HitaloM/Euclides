@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-pub mod math;
+pub mod basic_operations;
 
 struct Stack<T> {
     elements: Vec<T>,
@@ -45,10 +45,10 @@ fn handle_operator(operator: &str, stack: &mut Stack<i64>) {
     let n1 = stack.elements.pop().unwrap();
 
     let result = match operator {
-        "+" => Some(math::addition(n1, n2)),
-        "-" => Some(math::sub(n1, n2)),
-        "*" => Some(math::multiply(n1, n2)),
-        "/" => match math::divide(n1, n2) {
+        "+" => Some(basic_operations::addition(n1, n2)),
+        "-" => Some(basic_operations::subtraction(n1, n2)),
+        "*" => Some(basic_operations::multiply(n1, n2)),
+        "/" => match basic_operations::divide(n1, n2) {
             Ok(result) => Some(result.0),
             Err(_) => {
                 println!("Cannot divide by zero");
