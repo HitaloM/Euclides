@@ -25,7 +25,7 @@ fn main() {
 
     for token in expression.split_whitespace() {
         match token.parse::<i64>() {
-            Ok(num) => stack.elements.push(num),
+            Ok(value) => stack.elements.push(value),
             Err(_) => handle_operator(token, &mut stack),
         }
     }
@@ -41,27 +41,29 @@ fn handle_operator(operator: &str, stack: &mut Stack<i64>) {
         return;
     }
 
-    let n2 = stack.elements.pop().unwrap();
-    let n1 = stack.elements.pop().unwrap();
+    while stack.elements.len() > 1 {
+        let n2 = stack.elements.pop().unwrap();
+        let n1 = stack.elements.pop().unwrap();
 
-    let result = match operator {
-        "+" => Some(basic_operations::addition(n1, n2)),
-        "-" => Some(basic_operations::subtraction(n1, n2)),
-        "*" => Some(basic_operations::multiply(n1, n2)),
-        "/" => match basic_operations::divide(n1, n2) {
-            Ok(result) => Some(result.0),
-            Err(_) => {
-                println!("Cannot divide by zero");
-                None
+        let result = match operator {
+            "+" => Some(basic_operations::addition(n1, n2)),
+            "-" => Some(basic_operations::subtraction(n1, n2)),
+            "*" => Some(basic_operations::multiply(n1, n2)),
+            "/" => match basic_operations::divide(n1, n2) {
+                Ok(result) => Some(result.0),
+                Err(e) => {
+                    println!("{e}");
+                    None
+                }
+            },
+            _ => {
+                println!("Unknown operator: {operator}");
+                return;
             }
-        },
-        _ => {
-            println!("Unknown operator: {operator}");
-            return;
-        }
-    };
+        };
 
-    if let Some(value) = result {
-        stack.elements.push(value);
+        if let Some(value) = result {
+            stack.elements.push(value);
+        }
     }
 }
