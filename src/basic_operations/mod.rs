@@ -1,9 +1,9 @@
-pub mod addition;
-pub mod divide;
-pub mod multiply;
-pub mod subtraction;
+mod addition;
+mod divide;
+mod multiply;
+mod subtraction;
 
-pub use self::addition::addition;
-pub use self::divide::divide;
-pub use self::multiply::multiply;
-pub use self::subtraction::subtraction;
+pub use addition::addition;
+pub use divide::divide;
+pub use multiply::multiply;
+pub use subtraction::subtraction;

@@ -1,3 +1,3 @@
-pub mod exponent;
+mod exponent;
 
-pub use self::exponent::exponent;
+pub use exponent::exponent;
