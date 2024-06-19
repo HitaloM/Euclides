@@ -30,14 +30,16 @@ fn main() {
         }
     }
 
-    for element in stack.elements {
-        println!("Result: {element}");
+    if stack.elements.len() == 1 {
+        println!("Result: {}", stack.elements.first().unwrap())
+    } else {
+        println!("There's something wrong with your expression.")
     }
 }
 
 fn handle_operator(operator: &str, stack: &mut Stack<i64>) {
     if stack.elements.len() < 2 {
-        println!("Error: there are not enough operands on the stack for the operation.");
+        println!("Error: There are not enough operands on the stack for the operation.");
         return;
     }
 
@@ -52,12 +54,12 @@ fn handle_operator(operator: &str, stack: &mut Stack<i64>) {
             "/" => match basic_operations::divide(n1, n2) {
                 Ok(result) => Some(result.0),
                 Err(e) => {
-                    println!("{e}");
+                    println!("{}", e);
                     None
                 }
             },
             _ => {
-                println!("Unknown operator: {operator}");
+                println!("Unknown operator: {}", operator);
                 return;
             }
         };
