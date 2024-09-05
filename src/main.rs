@@ -7,6 +7,34 @@ struct Stack<T> {
     elements: VecDeque<T>,
 }
 
+impl<T> Stack<T> {
+    fn new() -> Self {
+        Stack {
+            elements: VecDeque::new(),
+        }
+    }
+
+    fn push(&mut self, value: T) {
+        self.elements.push_back(value);
+    }
+
+    fn pop(&mut self) -> Option<T> {
+        self.elements.pop_back()
+    }
+
+    fn len(&self) -> usize {
+        self.elements.len()
+    }
+
+    fn clear(&mut self) {
+        self.elements.clear();
+    }
+
+    fn top(&self) -> Option<&T> {
+        self.elements.back()
+    }
+}
+
 enum Notation {
     Prefix,
     Postfix,
@@ -19,10 +47,7 @@ fn main() {
 
     loop {
         if let Some((notation, tokens)) = get_user_input() {
-            let mut stack: Stack<i64> = Stack {
-                elements: VecDeque::new(),
-            };
-
+            let mut stack: Stack<i64> = Stack::new();
             let mut contains_operator = false;
 
             match notation {
@@ -38,8 +63,8 @@ fn main() {
                 }
             }
 
-            if contains_operator && stack.elements.len() == 1 {
-                println!("Result: {}", stack.elements.front().unwrap());
+            if contains_operator && stack.len() == 1 {
+                println!("Result: {}", stack.top().unwrap());
             } else if contains_operator {
                 println!("Error: The expression is malformed or incomplete.");
             } else {
@@ -84,11 +109,11 @@ fn evaluate_expression(
 
     for token in token_iter {
         match token.parse::<i64>() {
-            Ok(value) => stack.elements.push_back(value),
+            Ok(value) => stack.push(value),
             Err(_) => {
                 *contains_operator = true;
                 if handle_operator(token, stack, reverse).is_err() {
-                    stack.elements.clear();
+                    stack.clear();
                     break;
                 }
             }
@@ -97,12 +122,12 @@ fn evaluate_expression(
 }
 
 fn handle_operator(operator: &str, stack: &mut Stack<i64>, reverse: bool) -> Result<(), String> {
-    if stack.elements.len() < 2 {
+    if stack.len() < 2 {
         return Err("Error: Not enough operands on the stack for the operation.".to_string());
     }
 
-    let n2 = stack.elements.pop_back().unwrap();
-    let n1 = stack.elements.pop_back().unwrap();
+    let n2 = stack.pop().unwrap();
+    let n1 = stack.pop().unwrap();
 
     let (left, right) = if reverse { (n2, n1) } else { (n1, n2) };
 
@@ -123,7 +148,7 @@ fn handle_operator(operator: &str, stack: &mut Stack<i64>, reverse: bool) -> Res
     };
 
     if let Some(value) = result {
-        stack.elements.push_back(value);
+        stack.push(value);
         Ok(())
     } else {
         Err("Error in operation.".to_string())
