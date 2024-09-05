@@ -9,4 +9,4 @@ Euclides is a conceptual calculator that performs all basic and some advanced op
 - [x] Implement basic operations
 - [ ] Implement advanced/complex operations
 - [ ] Graphical User Interface
-- [ ] Support infix notation and prefix notation
+- [*] Support infix notation, prefix and postfix notation

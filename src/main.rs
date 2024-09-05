@@ -1,71 +1,116 @@
+use std::collections::VecDeque;
 use std::io::{self, Write};
 
 pub mod basic_operations;
 
 struct Stack<T> {
-    elements: Vec<T>,
+    elements: VecDeque<T>,
+}
+
+enum Notation {
+    Prefix,
+    Postfix,
+    Infix,
 }
 
 fn main() {
-    println!(
-        "Please enter an expression in Reverse Polish Notation, and I will evaluate it for you."
-    );
+    println!("Please enter an expression in either Prefix, Postfix, or Infix Notation, and I will evaluate it for you.");
+    println!("To specify the notation, use 'prefix:', 'postfix:', or 'infix:' at the beginning of your input.");
 
     loop {
-        print!("Expression: ");
-        io::stdout().flush().expect("Failed to flush stdout :/");
+        if let Some((notation, tokens)) = get_user_input() {
+            let mut stack: Stack<i64> = Stack {
+                elements: VecDeque::new(),
+            };
 
-        let mut expression = String::new();
-        io::stdin()
-            .read_line(&mut expression)
-            .expect("There's something very wrong with your expression.");
+            let mut contains_operator = false;
 
-        let mut stack: Stack<i64> = Stack {
-            elements: Vec::new(),
-        };
-
-        let tokens = expression.split_whitespace();
-
-        let mut contains_operator = false;
-
-        for token in tokens {
-            match token.parse::<i64>() {
-                Ok(value) => stack.elements.push(value),
-                Err(_) => {
-                    contains_operator = true;
-                    if let Err(_) = handle_operator(token, &mut stack) {
-                        stack.elements.clear();
-                        break;
-                    }
+            match notation {
+                Notation::Postfix => {
+                    evaluate_expression(&tokens, &mut stack, &mut contains_operator, false)
+                }
+                Notation::Prefix => {
+                    evaluate_expression(&tokens, &mut stack, &mut contains_operator, true)
+                }
+                Notation::Infix => {
+                    let postfix_tokens = infix_to_postfix(&tokens);
+                    evaluate_expression(&postfix_tokens, &mut stack, &mut contains_operator, false);
                 }
             }
-        }
 
-        if contains_operator && stack.elements.len() == 1 {
-            println!("Result: {}", stack.elements.first().unwrap());
-        } else if contains_operator {
-            println!("Error: The expression is malformed or incomplete.");
-        } else {
-            println!("Warning: The expression does not contain any operators.");
+            if contains_operator && stack.elements.len() == 1 {
+                println!("Result: {}", stack.elements.front().unwrap());
+            } else if contains_operator {
+                println!("Error: The expression is malformed or incomplete.");
+            } else {
+                println!("Warning: The expression does not contain any operators.");
+            }
         }
     }
 }
 
-fn handle_operator(operator: &str, stack: &mut Stack<i64>) -> Result<(), String> {
+fn get_user_input() -> Option<(Notation, Vec<String>)> {
+    print!("Expression: ");
+    io::stdout().flush().expect("Failed to flush stdout :/");
+
+    let mut expression = String::new();
+    io::stdin()
+        .read_line(&mut expression)
+        .expect("Failed to read line.");
+
+    let trimmed_expression = expression.trim();
+    match trimmed_expression.to_lowercase().as_str() {
+        expr if expr.starts_with("prefix:") => Some((Notation::Prefix, tokenize(&expr[7..]))),
+        expr if expr.starts_with("postfix:") => Some((Notation::Postfix, tokenize(&expr[8..]))),
+        expr if expr.starts_with("infix:") => Some((Notation::Infix, tokenize(&expr[6..]))),
+        _ => {
+            println!("Error: Please specify either 'prefix:', 'postfix:', or 'infix:' notation.");
+            None
+        }
+    }
+}
+
+fn evaluate_expression(
+    tokens: &[String],
+    stack: &mut Stack<i64>,
+    contains_operator: &mut bool,
+    reverse: bool,
+) {
+    let token_iter: Box<dyn Iterator<Item = &String>> = if reverse {
+        Box::new(tokens.iter().rev())
+    } else {
+        Box::new(tokens.iter())
+    };
+
+    for token in token_iter {
+        match token.parse::<i64>() {
+            Ok(value) => stack.elements.push_back(value),
+            Err(_) => {
+                *contains_operator = true;
+                if handle_operator(token, stack, reverse).is_err() {
+                    stack.elements.clear();
+                    break;
+                }
+            }
+        }
+    }
+}
+
+fn handle_operator(operator: &str, stack: &mut Stack<i64>, reverse: bool) -> Result<(), String> {
     if stack.elements.len() < 2 {
-        return Err(
-            "Error: There are not enough operands on the stack for the operation.".to_string(),
-        );
+        return Err("Error: Not enough operands on the stack for the operation.".to_string());
     }
 
-    let n2 = stack.elements.pop().unwrap();
-    let n1 = stack.elements.pop().unwrap();
+    let n2 = stack.elements.pop_back().unwrap();
+    let n1 = stack.elements.pop_back().unwrap();
+
+    let (left, right) = if reverse { (n2, n1) } else { (n1, n2) };
 
     let result = match operator {
-        "+" => Some(basic_operations::addition(n1, n2)),
-        "-" => Some(basic_operations::subtraction(n1, n2)),
-        "*" => Some(basic_operations::multiply(n1, n2)),
-        "/" => match basic_operations::divide(n1, n2) {
+        "+" => Some(basic_operations::addition(left, right)),
+        "-" => Some(basic_operations::subtraction(left, right)),
+        "*" => Some(basic_operations::multiply(left, right)),
+        "/" => match basic_operations::divide(left, right) {
             Ok(result) => Some(result.0),
             Err(e) => {
                 println!("{}", e);
@@ -78,9 +123,78 @@ fn handle_operator(operator: &str, stack: &mut Stack<i64>) -> Result<(), String>
     };
 
     if let Some(value) = result {
-        stack.elements.push(value);
+        stack.elements.push_back(value);
         Ok(())
     } else {
         Err("Error in operation.".to_string())
     }
+}
+
+fn tokenize(expression: &str) -> Vec<String> {
+    let mut tokens = Vec::new();
+    let mut current_token = String::new();
+
+    for c in expression.chars() {
+        if c.is_whitespace() {
+            if !current_token.is_empty() {
+                tokens.push(std::mem::take(&mut current_token));
+            }
+        } else if c.is_ascii_digit() {
+            current_token.push(c);
+        } else {
+            if !current_token.is_empty() {
+                tokens.push(std::mem::take(&mut current_token));
+            }
+            tokens.push(c.to_string());
+        }
+    }
+
+    if !current_token.is_empty() {
+        tokens.push(current_token);
+    }
+
+    tokens
+}
+
+fn infix_to_postfix(tokens: &[String]) -> Vec<String> {
+    let mut output = Vec::new();
+    let mut operators = VecDeque::new();
+
+    let precedence = |op: &str| -> i32 {
+        match op {
+            "+" | "-" => 1,
+            "*" | "/" => 2,
+            _ => 0,
+        }
+    };
+
+    for token in tokens {
+        if token.parse::<i64>().is_ok() {
+            output.push(token.clone());
+        } else if token == "(" {
+            operators.push_back(token.clone());
+        } else if token == ")" {
+            while let Some(op) = operators.pop_back() {
+                if op == "(" {
+                    break;
+                }
+                output.push(op);
+            }
+        } else {
+            while let Some(op) = operators.back() {
+                if precedence(op) > precedence(token) || (precedence(op) == precedence(token)) {
+                    output.push(operators.pop_back().unwrap());
+                } else {
+                    break;
+                }
+            }
+            operators.push_back(token.clone());
+        }
+    }
+
+    while let Some(op) = operators.pop_back() {
+        output.push(op);
+    }
+
+    output
 }
